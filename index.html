@@ -509,15 +509,15 @@
         	const adjustedBasePriceUSD = adjustedBasePrice / adjustedExchangeRate;
 
 
-                const feeUnder20k = 0.045;
-                const feeOver20k = 0.045;
+                const feeUnder20k = 0.0;
+                const feeOver20k = 0.0;
                 const adjustmentUnder20k = 200;
                 const adjustmentOver20k = 100;
 
                 const feePercent = adjustedBasePriceUSD < 20000 ? feeUnder20k : feeOver20k;
                 const adjustment = adjustedBasePriceUSD < 20000 ? adjustmentUnder20k : adjustmentOver20k;
 
-                const feeAmount = adjustedBasePriceUSD / 1.1 * feePercent;
+                const feeAmount = adjustedBasePriceUSD / 1 * feePercent;
                 let finalPriceUSD = adjustedBasePriceUSD - feeAmount + adjustment;
 
                 const formattedPrice = formatNumber(finalPriceUSD);
