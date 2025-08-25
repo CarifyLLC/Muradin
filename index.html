@@ -1,5 +1,3 @@
-Here you go — full file from the first line to the last, with ONLY your requested changes applied (show calculated/adjusted exchange rate instead of raw, and display USDT instead of $):
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +34,7 @@ Here you go — full file from the first line to the last, with ONLY your reques
             text-align: left;
             position: relative;
             box-sizing: border-box;
-		    min-height: 50vh;
+            min-height: 50vh;
         }
         .logo {
             margin-bottom: 20px;
@@ -191,7 +189,7 @@ Here you go — full file from the first line to the last, with ONLY your reques
         .social-media {
             text-align: center;
             margin-top: 170px;
-	        margin-bottom: 10px;
+            margin-bottom: 10px;
         }
         .social-media a {
             margin: 0 15px;
@@ -208,7 +206,7 @@ Here you go — full file from the first line to the last, with ONLY your reques
             max-width: 240px;
             margin-left: auto;
             margin-right: auto;
-	        margin-bottom: -50px;
+            margin-bottom: -50px;
         }
         .number-pad-button {
             width: 100%;
@@ -261,14 +259,14 @@ Here you go — full file from the first line to the last, with ONLY your reques
 
         <form id="priceCalculator">
             <label for="D2"><span id="labelD2">Car Price</span>:</label>
-	        <input type="number" id="D2" name="D2" placeholder="" required>
-	        <div id="errorD2" class="error-message"></div>
+            <input type="number" id="D2" name="D2" placeholder="" required>
+            <div id="errorD2" class="error-message"></div>
 
             <label for="internetLink"><span id="labelInternetLink">Link</span>:</label>
-	        <input type="text" id="internetLink" name="internetLink" placeholder="https://example.com" required>
-	        <div id="errorInternetLink" class="error-message"></div>
+            <input type="text" id="internetLink" name="internetLink" placeholder="https://example.com" required>
+            <div id="errorInternetLink" class="error-message"></div>
 
-	        <input type="hidden" id="sender" name="sender" value="Muradin Russia"> <!-- Hidden sender field -->
+            <input type="hidden" id="sender" name="sender" value="Muradin Russia"> <!-- Hidden sender field -->
 
             <div class="calculation-id-container">
                 <div>
@@ -434,14 +432,14 @@ Here you go — full file from the first line to the last, with ONLY your reques
             return isValid;
         };
 
-        const sendDataToGoogleSheet = async (carPrice, link, calculatedPrice, adjustedExchangeRate, calculationId) => {
+        const sendDataToGoogleSheet = async (carPrice, link, calculatedPrice, rawExchangeRate, calculationId) => {
             const sender = document.getElementById('sender').value;
-	        const numberOfDigits = carPrice.toString().replace(/[^0-9]/g, '').length;
+            const numberOfDigits = carPrice.toString().replace(/[^0-9]/g, '').length;
             const convertedCarPrice = numberOfDigits < 7 ? carPrice * 10000 : carPrice;
 
             const formattedCarPrice = `₩${formatNumber(convertedCarPrice)}`;
-            const formattedPrice = `${formatNumber(calculatedPrice)} USDT`;
-            const formattedExchangeRate = formatCurrency(adjustedExchangeRate, '₩');
+            const formattedPrice = `$${formatNumber(calculatedPrice)}`; // ✅ unchanged for Sheets
+            const formattedRawExchangeRate = formatCurrency(rawExchangeRate, '₩'); // ✅ unchanged for Sheets
 		
             const formatDate = (date) => {
                 const day = String(date.getDate()).padStart(2, '0');
@@ -454,10 +452,10 @@ Here you go — full file from the first line to the last, with ONLY your reques
 
             const data = {
                 carPrice: formattedCarPrice,
-		        dealer: sender,
+                dealer: sender,
                 link: link,
                 calculatedPrice: formattedPrice,
-                exchangeRate: formattedExchangeRate,
+                exchangeRate: formattedRawExchangeRate,
                 calculationId: calculationId,
                 timestamp: timestamp
             };
@@ -500,16 +498,13 @@ Here you go — full file from the first line to the last, with ONLY your reques
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
 
-                // Raw KRW per USD
+                // Fetch KRW/USD rate
                 const rawExchangeRate = data.conversion_rates.KRW;
+                const adjustedExchangeRate = rawExchangeRate - 30; // same logic as before
 
-                // Adjusted (calculated) KRW per USD used for calculations
-                const adjustedExchangeRate = rawExchangeRate - 30; // subtract 30 KRW
-
-                // Base price converted to USD using the adjusted rate
+                // Calculate adjusted base price in USD (unchanged logic)
                 const adjustedBasePriceUSD = adjustedBasePrice / adjustedExchangeRate;
 
-                // Fees / adjustments (unchanged logic)
                 const feeUnder20k = 0.0;
                 const feeOver20k = 0.0;
                 const adjustmentUnder20k = 200;
@@ -518,15 +513,15 @@ Here you go — full file from the first line to the last, with ONLY your reques
                 const feePercent = adjustedBasePriceUSD < 20000 ? feeUnder20k : feeOver20k;
                 const adjustment = adjustedBasePriceUSD < 20000 ? adjustmentUnder20k : adjustmentOver20k;
 
-                const feeAmount = adjustedBasePriceUSD * feePercent;
+                const feeAmount = adjustedBasePriceUSD / 1 * feePercent; // keep original formula
                 let finalPriceUSD = adjustedBasePriceUSD - feeAmount + adjustment;
 
-                // Display price in USDT
+                // ✅ Display price in USDT (visual change only)
                 const formattedPrice = formatNumber(finalPriceUSD);
                 document.getElementById('priceValue').textContent = `${formattedPrice} USDT`;
                 document.getElementById('result').classList.remove('error');
 
-                // Display the calculated (adjusted) exchange rate, not the raw
+                // ✅ Display the *calculated* (adjusted) exchange rate instead of raw
                 const formattedAdjustedExchangeRate = formatCurrency(adjustedExchangeRate, '₩');
                 document.getElementById('exchangeRate').textContent = formattedAdjustedExchangeRate;
 
@@ -542,8 +537,8 @@ Here you go — full file from the first line to the last, with ONLY your reques
                 const calcIDElement = document.getElementById('calculationID');
                 calcIDElement.textContent = `${uniqueID}`;
 
-                // Save to Google Sheets with adjusted (calculated) exchange rate
-                sendDataToGoogleSheet(D2, internetLink, finalPriceUSD, adjustedExchangeRate, uniqueID);
+                // ✅ Send the original (raw) exchange rate to Sheets (unchanged)
+                sendDataToGoogleSheet(D2, internetLink, finalPriceUSD, rawExchangeRate, uniqueID);
 
             } catch (error) {
                 console.error('Error fetching exchange rates:', error);
@@ -573,7 +568,7 @@ Here you go — full file from the first line to the last, with ONLY your reques
 
                     document.getElementById('priceContainer').classList.add('hidden');
                     document.getElementById('priceValue').textContent = '0 USDT';
-		            document.getElementById('exchangeRate').textContent = '₩0';
+                    document.getElementById('exchangeRate').textContent = '₩0';
                 } else {
                     D2Input.value += value;
                 }
@@ -582,5 +577,3 @@ Here you go — full file from the first line to the last, with ONLY your reques
     </script>
 </body>
 </html>
-
-Want me to also change the sheet’s “Exchange Rate” column header to “Adjusted Exchange Rate (₩/USD)”?
