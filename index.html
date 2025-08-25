@@ -525,8 +525,7 @@
                 document.getElementById('result').classList.remove('error');
 
                 // Display raw exchange rate
-        	const formattedRawExchangeRate = formatCurrency(rawExchangeRate, '₩');
-        	document.getElementById('exchangeRate').textContent = formattedRawExchangeRate;
+        	    document.getElementById('exchangeRate').textContent = formatCurrency(rawExchangeRate, '₩');
 
                 const checkmark = document.getElementById('checkmark');
                 checkmark.classList.remove('hidden');
