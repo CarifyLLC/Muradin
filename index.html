@@ -247,9 +247,9 @@
 
         <div class="language-selector">
             <select id="language">
-                <option value="az" class="flag">🇦🇿</option>
-                <option value="en" class="flag">🇬🇧</option>
                 <option value="ru" class="flag">🇷🇺</option>
+		<option value="az" class="flag">🇦🇿</option>
+                <option value="en" class="flag">🇬🇧</option>
                 <option value="fr" class="flag">🇫🇷</option>
                 <option value="ar" class="flag">🇸🇦</option>
             </select>
@@ -392,7 +392,7 @@
             setLanguage(event.target.value);
         });
 
-        setLanguage('az');
+        setLanguage('ru');
 
         const formatNumber = (number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(Math.round(number));
         const formatCurrency = (number, symbol) => `${symbol}${formatNumber(number)}`;
@@ -503,7 +503,7 @@
 
 		// Fetch KRW/USD rate
         	const rawExchangeRate = data.conversion_rates.KRW;
-        	const adjustedExchangeRate = rawExchangeRate - 30; // Subtract 15 KRW for calculations
+        	const adjustedExchangeRate = rawExchangeRate - 25; // Subtract 15 KRW for calculations
 
         	// Calculate adjusted base price in USD
         	const adjustedBasePriceUSD = adjustedBasePrice / adjustedExchangeRate;
@@ -511,8 +511,8 @@
 
                 const feeUnder20k = 0.0;
                 const feeOver20k = 0.0;
-                const adjustmentUnder20k = 200;
-                const adjustmentOver20k = 100;
+                const adjustmentUnder20k = 1000;
+                const adjustmentOver20k = 1000;
 
                 const feePercent = adjustedBasePriceUSD < 20000 ? feeUnder20k : feeOver20k;
                 const adjustment = adjustedBasePriceUSD < 20000 ? adjustmentUnder20k : adjustmentOver20k;
@@ -521,12 +521,12 @@
                 let finalPriceUSD = adjustedBasePriceUSD - feeAmount + adjustment;
 
                 const formattedPrice = formatNumber(finalPriceUSD);
-                document.getElementById('priceValue').textContent = `$${formattedPrice}`;
+                document.getElementById('priceValue').textContent = `₮ ${formattedPrice}`;
                 document.getElementById('result').classList.remove('error');
 
                 // Display raw exchange rate
-        	const formattedRawExchangeRate = formatCurrency(rawExchangeRate, '₩');
-        	document.getElementById('exchangeRate').textContent = formattedRawExchangeRate;
+        	const formattedAdjustedExchangeRate = formatCurrency(adjustedExchangeRate, '₩');
+		document.getElementById('exchangeRate').textContent = formattedAdjustedExchangeRate;
 
                 const checkmark = document.getElementById('checkmark');
                 checkmark.classList.remove('hidden');
